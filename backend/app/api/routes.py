@@ -5,6 +5,7 @@ from app.services.chat_service import ChatService
 from app.utils.validators import sanitize_input, validate_message
 import uuid
 import logging
+import time
 
 api_bp = Blueprint('api', __name__)
 chat_service = ChatService()
@@ -46,6 +47,7 @@ def analyze():
 @limiter.limit("30 per minute")
 def chat():
     """Main chat endpoint"""
+    start_time = time.time()
     try:
         data = request.json
         if not data:
@@ -67,12 +69,18 @@ def chat():
         
         message = sanitize_input(message)
         
+        logger.info(f"Processing chat request (message length: {len(message)}, session: {session_id[:8]}...)")
+        
         # Process message (synchronous)
         result = chat_service.process_message(message, session_id, features)
         
+        elapsed = time.time() - start_time
+        logger.info(f"Chat request completed in {elapsed:.2f}s")
+        
         return jsonify(result)
     except Exception as e:
-        logger.error(f"Error in chat endpoint: {str(e)}", exc_info=True)
+        elapsed = time.time() - start_time
+        logger.error(f"Error in chat endpoint (after {elapsed:.2f}s): {str(e)}", exc_info=True)
         return jsonify({"error": "Error processing message. Please try again."}), 500
 
 @api_bp.route('/health', methods=['GET'])
