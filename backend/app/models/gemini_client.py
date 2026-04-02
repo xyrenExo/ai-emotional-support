@@ -15,7 +15,7 @@ class GeminiClient:
                          emotion_context: Dict,
                          crisis_context: Dict,
                          features: Dict,
-                         conversation_history: List[Dict] = None) -> str:
+                         conversation_history: Optional[List[Dict]] = None) -> str:
         """Generate empathetic response using Gemini (synchronous)"""
         
         # Build the system prompt
