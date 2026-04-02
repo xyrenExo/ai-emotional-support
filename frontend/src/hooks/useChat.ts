@@ -51,19 +51,40 @@ export const useChat = () => {
         setMessages((prev) => [...prev, assistantMessage]);
 
         return response;
-      } catch (error) {
+      } catch (error: any) {
         console.error("Error sending message:", error);
 
+        let errorMessage =
+          "I'm having trouble connecting. Please check your internet connection and try again.";
+
+        if (error.type === "TIMEOUT") {
+          errorMessage =
+            "The server is taking too long to respond. Please try again.";
+        } else if (error.type === "NETWORK_ERROR") {
+          errorMessage =
+            "Cannot reach the server. Please check your internet connection.";
+        } else if (error.response?.status === 429) {
+          errorMessage =
+            "Too many requests. Please wait a moment and try again.";
+        } else if (error.response?.status === 500) {
+          errorMessage =
+            "Server error. Please try again later or refresh the page.";
+        } else if (error.response?.status === 503) {
+          errorMessage =
+            "Server is currently unavailable. Please try again later.";
+        } else if (error.response?.data?.error) {
+          errorMessage = error.response.data.error;
+        }
+
         // Add error message
-        const errorMessage: Message = {
+        const errorMessage_Obj: Message = {
           id: (Date.now() + 1).toString(),
-          content:
-            "I'm having trouble connecting. Please check your internet connection and try again.",
+          content: errorMessage,
           role: "assistant",
           timestamp: new Date(),
         };
 
-        setMessages((prev) => [...prev, errorMessage]);
+        setMessages((prev) => [...prev, errorMessage_Obj]);
       } finally {
         setIsLoading(false);
       }

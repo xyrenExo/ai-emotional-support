@@ -26,4 +26,4 @@ class Config:
     
     # Safety settings
     MAX_MESSAGE_LENGTH = 2000
-    ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', 'http://localhost:3000').split(',')
+    ALLOWED_ORIGINS = os.getenv('ALLOWED_ORIGINS', '*').split(',') if os.getenv('ALLOWED_ORIGINS', '*') != '*' else ['*']

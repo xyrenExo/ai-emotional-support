@@ -1,19 +1,21 @@
 import google.generativeai as genai
 from typing import Dict, List, Optional
-import asyncio
+import threading
 from app.config import Config
 
 class GeminiClient:
     def __init__(self):
+        if not Config.GEMINI_API_KEY:
+            raise ValueError("GEMINI_API_KEY environment variable is not set")
         genai.configure(api_key=Config.GEMINI_API_KEY)
         self.model = genai.GenerativeModel('gemini-pro')
         
-    async def generate_response(self, 
-                                user_message: str, 
-                                emotion_context: Dict,
-                                crisis_context: Dict,
-                                features: Dict) -> str:
-        """Generate empathetic response using Gemini"""
+    def generate_response(self, 
+                         user_message: str, 
+                         emotion_context: Dict,
+                         crisis_context: Dict,
+                         features: Dict) -> str:
+        """Generate empathetic response using Gemini (synchronous)"""
         
         # Build the system prompt
         system_prompt = self._build_system_prompt(emotion_context, crisis_context, features)
@@ -26,9 +28,7 @@ User message: {user_message}
 Generate a response following the guidelines above:"""
         
         try:
-            response = await asyncio.get_event_loop().run_in_executor(
-                None, self.model.generate_content, full_prompt
-            )
+            response = self.model.generate_content(full_prompt)
             return response.text.strip()
         except Exception as e:
             print(f"Gemini API error: {e}")

@@ -155,4 +155,3 @@ def handle_options_request(f):
             return response
         return f(*args, **kwargs)
     return decorated_function
-    return decorated_function

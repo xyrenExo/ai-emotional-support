@@ -10,24 +10,38 @@ const api = axios.create({
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 60000, // 60 second timeout
+  timeout: 30000, // 30 second timeout (reduced from 60)
 });
 
 // Add response interceptor for error handling
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    console.error("API Error:", error);
+    console.error("API Error Details:", {
+      code: error.code,
+      message: error.message,
+      status: error.response?.status,
+      statusText: error.response?.statusText,
+      data: error.response?.data,
+      url: error.config?.url,
+      baseURL: error.config?.baseURL,
+    });
+
     if (error.code === "ECONNABORTED") {
       return Promise.reject({
         message: "Request timed out. The server is taking too long to respond.",
         status: 504,
+        type: "TIMEOUT",
       });
     }
     if (!error.response) {
+      // Network error
       return Promise.reject({
-        message: "Network error. Please check your internet connection.",
+        message:
+          "Network error. Cannot reach the server. Please check your connection.",
         status: 0,
+        type: "NETWORK_ERROR",
+        originalError: error,
       });
     }
     return Promise.reject(error);
