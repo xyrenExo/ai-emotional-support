@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 from flask import Flask, jsonify
 from flask_cors import CORS
 from flask_limiter import Limiter
@@ -78,24 +77,3 @@ def register_error_handlers(app):
     def internal_error(error):
         app.logger.error(f'Internal server error: {error}', exc_info=True)
         return jsonify({'error': 'Internal server error'}), 500
-=======
-from flask import Flask
-from flask_cors import CORS
-from flask_limiter import Limiter
-from flask_limiter.util import get_remote_address
-from app.config import Config
-from app.api.routes import api_bp, limiter
-
-def create_app():
-    app = Flask(__name__)
-    app.config.from_object(Config)
-    
-    # Initialize extensions
-    CORS(app, origins=Config.ALLOWED_ORIGINS)
-    limiter.init_app(app)
-    
-    # Register blueprints
-    app.register_blueprint(api_bp, url_prefix='/api')
-    
-    return app
->>>>>>> 6a97c5ff1caff98b22d3c35a1de0b0b2e5252662
