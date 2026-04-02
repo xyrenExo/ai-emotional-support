@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   output: "standalone",
@@ -23,3 +24,22 @@ const nextConfig = {
 };
 
 module.exports = nextConfig;
+=======
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+    output: 'standalone',
+    images: {
+        domains: ['localhost'],
+    },
+    async rewrites() {
+        return [
+            {
+                source: '/api/:path*',
+                destination: `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'}/api/:path*`,
+            },
+        ];
+    },
+};
+
+module.exports = nextConfig;
+>>>>>>> 6a97c5ff1caff98b22d3c35a1de0b0b2e5252662
