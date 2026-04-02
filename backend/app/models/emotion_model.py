@@ -1,7 +1,7 @@
 import torch
 from transformers import AutoTokenizer, AutoModelForSequenceClassification
 import numpy as np
-from typing import Dict, List, Tuple
+from typing import Dict, List, Tuple, Any
 import logging
 
 logger = logging.getLogger(__name__)
@@ -44,7 +44,7 @@ class EmotionDetector:
             logger.error(f"Failed to load EmotionDetector model: {e}")
             _EMOTION_MODEL_LOADED = False
     
-    def detect(self, text: str) -> Dict[str, float]:
+    def detect(self, text: str) -> Dict[str, Any]:
         """Detect emotions in text and return top emotions with intensities"""
         global _EMOTION_MODEL, _EMOTION_TOKENIZER
         
