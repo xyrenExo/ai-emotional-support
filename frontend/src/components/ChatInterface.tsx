@@ -22,6 +22,7 @@ import {
 import { useChat } from "@/hooks/useChat";
 import MessageBubble from "./MessageBubble";
 import TypingIndicator from "./TypingIndicator";
+import ProfessionalHelpModal from "./ProfessionalHelpModal";
 
 const featureIcons: Record<string, React.ReactNode> = {
   music: <Music className="w-5 h-5 text-accent-500" />,
@@ -54,6 +55,8 @@ const ChatInterface: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [showNewFolderInput, setShowNewFolderInput] = useState(false);
   const [newFolderName, setNewFolderName] = useState("");
+  const [showProfessionalHelpModal, setShowProfessionalHelpModal] =
+    useState(false);
   const [folders, setFolders] = useState([
     "Stress Relief",
     "Daily Journals",
@@ -303,7 +306,13 @@ const ChatInterface: React.FC = () => {
                 ).map((key) => (
                   <div
                     key={key}
-                    onClick={() => toggleFeature(key as keyof typeof features)}
+                    onClick={() => {
+                      if (key === "professional_help") {
+                        setShowProfessionalHelpModal(true);
+                      } else {
+                        toggleFeature(key as keyof typeof features);
+                      }
+                    }}
                     className={`p-4 rounded-2xl cursor-pointer border transition-all ${
                       features[key]
                         ? "bg-[#142A1E] border-accent-500/50 hover:bg-[#1A3326]"
@@ -396,6 +405,12 @@ const ChatInterface: React.FC = () => {
           </div>
         </div>
       </div>
+
+      {/* Professional Help Modal */}
+      <ProfessionalHelpModal
+        isOpen={showProfessionalHelpModal}
+        onClose={() => setShowProfessionalHelpModal(false)}
+      />
     </div>
   );
 };

@@ -91,6 +91,16 @@ export const chatAPI = {
     }
   },
 
+  getProfessionalHelp: async () => {
+    try {
+      const response = await api.get("/professional-help");
+      return response.data;
+    } catch (error) {
+      console.error("Error getting professional help resources:", error);
+      throw error;
+    }
+  },
+
   healthCheck: async () => {
     try {
       const response = await api.get("/health");
