@@ -82,13 +82,17 @@ Focus on validation and comfort."""
         
         # Add feature-specific guidance
         if features.get('music'):
-            prompt += "\n- Suggest calming music or nature sounds"
+            prompt += "\n- Suggest calming music, nature sounds, or ambient music (genres like lo-fi, ambient, or classical)"
         if features.get('breathing'):
-            prompt += "\n- Include a simple breathing exercise (4-7-8 technique)"
+            prompt += "\n- Include a simple breathing exercise like the 4-7-8 technique or box breathing"
         if features.get('mental'):
-            prompt += "\n- Suggest a simple mental wellness exercise"
+            prompt += "\n- Suggest a cognitive reframing exercise or mental wellness activity"
         if features.get('insight'):
-            prompt += "\n- Provide emotional insight and reflection"
+            prompt += "\n- Provide deep emotional insight and help identify underlying patterns"
+        if features.get('professional_help'):
+            prompt += "\n- Acknowledge when professional help might be beneficial"
+            prompt += "\n- Suggest connecting with a therapist or counselor if appropriate"
+            prompt += "\n- Normalize seeking professional mental health support"
         
         return prompt
     
