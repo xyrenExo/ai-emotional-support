@@ -46,13 +46,15 @@ class ChatService:
             crisis_result = self.crisis_detector.detect(message)
             logger.debug(f"Crisis detection took {time.time() - crisis_start:.2f}s")
             
-            # Step 3: Generate response with Gemini
+            # Step 3: Generate response with Gemini (include conversation history for context)
             gemini_start = time.time()
+            conversation_history = self.sessions.get(session_id, [])
             gemini_response = self.gemini_client.generate_response(
                 message, 
                 emotion_result, 
                 crisis_result,
-                features
+                features,
+                conversation_history
             )
             logger.debug(f"Gemini response took {time.time() - gemini_start:.2f}s")
             
