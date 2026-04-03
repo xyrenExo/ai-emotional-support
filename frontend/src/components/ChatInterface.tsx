@@ -1,15 +1,34 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
-import { Send, Mic, Loader2 } from 'lucide-react';
+import { 
+    Send, Mic, Loader2, Menu, Plus, Search, 
+    MessageSquare, FolderOpen, MoreHorizontal, Bookmark, Share, 
+    Music, Wind, Brain, Lightbulb, Phone
+} from 'lucide-react';
 import { useChat } from '@/hooks/useChat';
 import MessageBubble from './MessageBubble';
 import TypingIndicator from './TypingIndicator';
-import EmotionDisplay from './EmotionDisplay';
-import FeatureToggles from './FeatureToggles';
+
+const featureIcons: Record<string, React.ReactNode> = {
+    music: <Music className="w-5 h-5 text-accent-500" />,
+    breathing: <Wind className="w-5 h-5 text-accent-500" />,
+    mental: <Brain className="w-5 h-5 text-accent-500" />,
+    insight: <Lightbulb className="w-5 h-5 text-accent-500" />,
+    professional_help: <Phone className="w-5 h-5 text-red-500" />
+};
+
+const featureDetails: Record<string, { title: string, desc: string }> = {
+    music: { title: "Music Suggestions", desc: "Tailored calming music for your mood." },
+    breathing: { title: "Breathing Exercises", desc: "Guided routines to help you relax." },
+    mental: { title: "Mental Exercises", desc: "Cognitive reframing exercises." },
+    insight: { title: "Mood Insights", desc: "Analyze emotional patterns." },
+    professional_help: { title: "Professional Help", desc: "Connect with certified therapists." }
+};
 
 const ChatInterface: React.FC = () => {
     const [input, setInput] = useState('');
+    const [sidebarOpen, setSidebarOpen] = useState(true);
     const { messages, isLoading, features, sendMessage, toggleFeature } = useChat();
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const inputRef = useRef<HTMLTextAreaElement>(null);
@@ -38,63 +57,165 @@ const ChatInterface: React.FC = () => {
         }
     };
 
-    const lastMessage = messages[messages.length - 1];
-    const lastEmotion = lastMessage?.role === 'assistant' ? lastMessage.emotion : null;
+    const toggleSidebar = () => setSidebarOpen(!sidebarOpen);
+
+    const activeFeatures = Object.keys(features).filter((k) => features[k as keyof typeof features]);
 
     return (
-        <div className="flex flex-col h-screen bg-gradient-to-br from-calm-50 to-sage-50 dark:from-gray-900 dark:to-gray-800">
-            {/* Header */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700 p-4">
-                <div className="max-w-4xl mx-auto flex justify-between items-center">
-                    <div>
-                        <h1 className="text-2xl font-semibold text-gray-800 dark:text-white">
-                            Emotional Support Assistant
-                        </h1>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                            Anonymous & Safe Space
-                        </p>
+        <div className="flex h-screen bg-surface-900 text-gray-200 overflow-hidden font-sans">
+            
+            {/* Sidebar */}
+            <div className={`transition-all duration-300 flex flex-col bg-[#1A1A1A] border-r border-[#2A2A2A] ${sidebarOpen ? 'w-[260px] opacity-100' : 'w-0 opacity-0 overflow-hidden'}`}>
+                {/* Sidebar Header */}
+                <div className="p-4 flex items-center justify-between mt-2">
+                    <div className="flex items-center gap-2 px-2 py-1.5 bg-[#252525] rounded-xl cursor-pointer hover:bg-[#303030] transition-colors flex-1">
+                        <MessageSquare className="w-4 h-4 text-gray-400" />
+                        <span className="text-sm font-medium">My Sessions</span>
+                        <MoreHorizontal className="w-4 h-4 text-gray-500 ml-auto" />
                     </div>
-                    {lastEmotion && <EmotionDisplay emotion={lastEmotion} />}
+                </div>
+
+                {/* Sidebar Search */}
+                <div className="px-4 mb-4">
+                    <div className="relative">
+                        <Search className="w-4 h-4 absolute left-3 top-2.5 text-gray-500" />
+                        <input 
+                            type="text" 
+                            placeholder="Search" 
+                            className="w-full bg-[#252525] text-sm text-gray-200 placeholder-gray-500 rounded-lg pl-9 pr-4 py-2 outline-none focus:ring-1 focus:ring-accent-500 border border-transparent focus:border-accent-500/50"
+                        />
+                    </div>
+                </div>
+
+                {/* Sidebar Folders */}
+                <div className="flex-1 overflow-y-auto px-4 custom-scrollbar">
+                    <div className="mb-6">
+                        <h3 className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider flex justify-between items-center">
+                            Folders
+                            <Plus className="w-3.5 h-3.5 cursor-pointer hover:text-gray-300" />
+                        </h3>
+                        <div className="space-y-1">
+                            {['Stress Relief', 'Daily Journals', 'Therapy Notes'].map(folder => (
+                                <div key={folder} className="flex items-center gap-2 text-sm text-gray-400 p-2 hover:bg-[#252525] rounded-lg cursor-pointer transition-colors">
+                                    <FolderOpen className="w-4 h-4" />
+                                    <span>{folder}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    <div>
+                        <h3 className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wider flex justify-between items-center">
+                            Recent
+                            <Plus className="w-3.5 h-3.5 cursor-pointer hover:text-gray-300" />
+                        </h3>
+                        <div className="space-y-1">
+                            <div className="flex items-center gap-2 text-sm text-gray-300 p-2 bg-[#2A2A2B] rounded-lg cursor-pointer transition-colors">
+                                <MessageSquare className="w-4 h-4 text-gray-500" />
+                                <span className="truncate">Anxiety before presentation</span>
+                                <MoreHorizontal className="w-4 h-4 text-gray-500 ml-auto opacity-0 group-hover:opacity-100" />
+                            </div>
+                            <div className="flex items-center gap-2 text-sm text-gray-400 p-2 hover:bg-[#2A2A2B] rounded-lg cursor-pointer transition-colors">
+                                <MessageSquare className="w-4 h-4 text-gray-500" />
+                                <span className="truncate">Feeling overwhelmed</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Sidebar Footer */}
+                <div className="p-4 border-t border-[#2A2A2A]">
+                    <button className="w-full flex items-center justify-center gap-2 bg-accent-500 hover:bg-accent-600 text-white py-2.5 rounded-xl text-sm font-semibold transition-all">
+                        <Plus className="w-4 h-4" />
+                        New Session
+                    </button>
                 </div>
             </div>
 
-            {/* Feature Toggles */}
-            <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm border-b border-gray-200 dark:border-gray-700">
-                <div className="max-w-4xl mx-auto">
-                    <FeatureToggles features={features} onToggle={toggleFeature} />
+            {/* Main Chat Area */}
+            <div className="flex-1 flex flex-col relative h-full bg-[#0E0E0E]">
+                
+                {/* Top Nav */}
+                <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10 bg-gradient-to-b from-[#0E0E0E] to-transparent pointer-events-none">
+                    <div className="flex items-center gap-4 pointer-events-auto">
+                        <button onClick={toggleSidebar} className="p-2 hover:bg-surface-700 rounded-lg text-gray-400 transition-colors">
+                            <Menu className="w-5 h-5" />
+                        </button>
+                        <div className="flex items-center gap-2">
+                            <span className="text-sm font-medium text-gray-300">Emotional Support AI</span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-[#142A1E] text-accent-400 border border-accent-500/20">v2.0</span>
+                        </div>
+                    </div>
+                    <div className="flex items-center gap-3 pointer-events-auto">
+                        <Bookmark className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-200" />
+                        <Share className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-200" />
+                    </div>
                 </div>
-            </div>
 
-            {/* Messages */}
-            <div className="flex-1 overflow-y-auto p-4">
-                <div className="max-w-4xl mx-auto space-y-4">
-                    {messages.length === 0 && (
-                        <div className="text-center text-gray-500 dark:text-gray-400 mt-20">
-                            <div className="text-6xl mb-4">💙</div>
-                            <h2 className="text-2xl font-semibold mb-2">Welcome to your safe space</h2>
-                            <p className="text-lg">
-                                Share what's on your mind. I'm here to listen and support you.
+                <div className="flex-1 overflow-y-auto w-full flex justify-center pt-20 pb-40 px-4 custom-scrollbar">
+                    {messages.length === 0 ? (
+                        <div className="flex flex-col items-center justify-center w-full max-w-3xl mt-10">
+                            <div className="w-12 h-12 bg-[#1A1A1A] rounded-full flex items-center justify-center mb-6">
+                                <Brain className="w-6 h-6 text-accent-500" />
+                            </div>
+                            <h2 className="text-3xl font-semibold text-white mb-2">How can I help you today?</h2>
+                            <p className="text-gray-400 mb-10 text-center">
+                                I provide a safe, anonymous space. Select support tools below or just start typing.
                             </p>
-                            <p className="text-sm mt-4">
-                                Remember: This is a private, anonymous conversation.
-                            </p>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 w-full mb-8">
+                                {(Object.keys(featureDetails) as Array<keyof typeof features>).map(key => (
+                                    <div 
+                                        key={key} 
+                                        onClick={() => toggleFeature(key as keyof typeof features)}
+                                        className={`p-4 rounded-2xl cursor-pointer border transition-all ${
+                                            features[key] 
+                                                ? 'bg-[#142A1E] border-accent-500/50 hover:bg-[#1A3326]' 
+                                                : 'bg-[#1A1A1A] border-[#2A2A2A] hover:bg-[#252525] hover:border-[#3A3A3A]'
+                                        }`}
+                                    >
+                                        <div className="mb-3">
+                                            {featureIcons[key]}
+                                        </div>
+                                        <h4 className={`text-sm font-medium mb-1 ${features[key] ? 'text-accent-400' : 'text-gray-200'}`}>
+                                            {featureDetails[key].title}
+                                        </h4>
+                                        <p className="text-xs text-gray-500">
+                                            {featureDetails[key].desc}
+                                        </p>
+                                    </div>
+                                ))}
+                            </div>
+                            
+                            <div className="flex flex-wrap items-center justify-center gap-2">
+                                <span className={`px-4 py-1.5 rounded-full text-xs font-medium cursor-pointer ${activeFeatures.length === 0 ? 'bg-[#3A3A3A] text-white' : 'text-gray-400 hover:bg-[#1A1A1A]'}`}>
+                                    Just talk
+                                </span>
+                                {(Object.keys(featureDetails)).map((key) => (
+                                   features[key as keyof typeof features] && (
+                                       <span key={key} className="px-4 py-1.5 rounded-full text-xs font-medium cursor-pointer bg-[#142A1E] text-accent-400 border border-accent-500/20">
+                                            {featureDetails[key].title}
+                                       </span>
+                                   )
+                                ))}
+                            </div>
+                        </div>
+                    ) : (
+                        <div className="w-full max-w-3xl space-y-6">
+                            {messages.map((message) => (
+                                <MessageBubble key={message.id} message={message} />
+                            ))}
+                            {isLoading && <TypingIndicator />}
+                            <div ref={messagesEndRef} />
                         </div>
                     )}
-
-                    {messages.map((message) => (
-                        <MessageBubble key={message.id} message={message} />
-                    ))}
-
-                    {isLoading && <TypingIndicator />}
-                    <div ref={messagesEndRef} />
                 </div>
-            </div>
 
-            {/* Input */}
-            <div className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm border-t border-gray-200 dark:border-gray-700 p-4">
-                <form onSubmit={handleSubmit} className="max-w-4xl mx-auto">
-                    <div className="flex space-x-2 items-end">
-                        <div className="flex-1 relative">
+                {/* Input Area */}
+                <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0E0E0E] via-[#0E0E0E]/90 to-transparent">
+                    <div className="max-w-3xl mx-auto w-full">
+                        <form onSubmit={handleSubmit} className="relative flex items-center bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-2 pl-4 focus-within:ring-1 focus-within:ring-[#3A3A3A] focus-within:border-[#3A3A3A] transition-all">
+                            <Mic className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
                             <textarea
                                 ref={inputRef}
                                 value={input}
@@ -102,28 +223,29 @@ const ChatInterface: React.FC = () => {
                                 onKeyPress={handleKeyPress}
                                 placeholder="Type your message here..."
                                 rows={1}
-                                className="w-full px-4 py-3 bg-white dark:bg-gray-900 border border-gray-300 dark:border-gray-600 rounded-2xl focus:outline-none focus:ring-2 focus:ring-calm-500 focus:border-transparent resize-none"
-                                style={{ minHeight: '48px', maxHeight: '120px' }}
+                                className="flex-1 bg-transparent border-none text-white focus:outline-none focus:ring-0 resize-none px-3 py-2 text-sm placeholder-gray-500 max-h-[150px]"
+                                style={{ minHeight: '40px' }}
                             />
+                            <button
+                                type="submit"
+                                disabled={!input.trim() || isLoading}
+                                className={`p-2.5 rounded-xl flex items-center justify-center transition-all ${
+                                    input.trim() && !isLoading 
+                                        ? 'bg-accent-500 text-white hover:bg-accent-600 shadow-lg shadow-accent-500/20 cursor-pointer' 
+                                        : 'bg-[#2A2A2A] text-gray-500 cursor-not-allowed'
+                                }`}
+                            >
+                                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Send className="w-4 h-4" />}
+                            </button>
+                        </form>
+                        <div className="text-center mt-3">
+                            <span className="text-[10px] text-gray-500">
+                                This AI assistant can make mistakes. Please consider verifying important medical advice.
+                            </span>
                         </div>
-
-                        <button
-                            type="submit"
-                            disabled={!input.trim() || isLoading}
-                            className="p-3 bg-calm-500 text-white rounded-full hover:bg-calm-600 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                        >
-                            {isLoading ? (
-                                <Loader2 className="w-5 h-5 animate-spin" />
-                            ) : (
-                                <Send className="w-5 h-5" />
-                            )}
-                        </button>
                     </div>
+                </div>
 
-                    <div className="text-xs text-center text-gray-500 dark:text-gray-400 mt-2">
-                        Your privacy is protected. This conversation is anonymous.
-                    </div>
-                </form>
             </div>
         </div>
     );
