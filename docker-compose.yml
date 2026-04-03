@@ -16,7 +16,7 @@ services:
     environment:
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - DATABASE_URL=postgresql://user:password@postgres:5432/emotion_db
-      - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000
+      - ALLOWED_ORIGINS=http://localhost:3000,http://frontend:3000,https://couns-system.ddns.net
     env_file:
       - .env
     depends_on:
