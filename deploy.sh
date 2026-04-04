@@ -38,9 +38,9 @@ docker-compose up -d
 echo "⏳ Waiting for services to be ready (30s)..."
 sleep 30
 
-# Run database migrations
-echo "🗄️ Running database migrations..."
-docker-compose exec backend python -c "from app import create_app; from app.models import db; db.create_all()" || echo "⚠️ Migrations failed."
+# Verify backend container is running
+echo "🔍 Verifying backend container..."
+docker-compose exec backend python -c "from app import create_app; app = create_app(); print('✅ Flask app created successfully')" || echo "⚠️ Backend verification failed. Check logs with 'docker-compose logs backend'"
 
 # Setup SSL with Certbot (if not already handled by a real cert)
 if [ ! -f ./ssl/cert.pem ] && [ "$DOMAIN" != "localhost" ]; then
