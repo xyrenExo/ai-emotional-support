@@ -8,7 +8,7 @@ class GeminiClient:
         if not Config.GEMINI_API_KEY:
             raise ValueError("GEMINI_API_KEY environment variable is not set")
         genai.configure(api_key=Config.GEMINI_API_KEY)
-        self.model = genai.GenerativeModel('gemini-pro')
+        self.model = genai.GenerativeModel('gemini-2.0-flash')
         
     def generate_response(self, 
                          user_message: str, 
@@ -24,17 +24,20 @@ class GeminiClient:
         # Build conversation context
         conversation_context = ""
         if conversation_history and len(conversation_history) > 0:
-            conversation_context = "\n\nCONVERSATION HISTORY (last 5 exchanges):\n"
+            conversation_context = "\n\n--- Previous conversation ---\n"
             for exchange in conversation_history[-5:]:
                 conversation_context += f"User: {exchange.get('user', '')}\n"
-                conversation_context += f"Assistant: {exchange.get('assistant', '')}\n\n"
+                conversation_context += f"You: {exchange.get('assistant', '')}\n\n"
+            conversation_context += "--- End of previous conversation ---\n\n"
         
         # Full prompt with user message
-        full_prompt = f"""{system_prompt}{conversation_context}
+        full_prompt = f"""{system_prompt}
 
-CURRENT USER MESSAGE: {user_message}
+{conversation_context}Here's what they just said:
 
-Generate a response following the guidelines above. Be specific to what the user just shared, reference their situation, and avoid generic responses."""
+"{user_message}"
+
+Respond naturally and thoughtfully."""
         
         try:
             response = self.model.generate_content(full_prompt)
@@ -44,63 +47,53 @@ Generate a response following the guidelines above. Be specific to what the user
             return self._get_fallback_response(emotion_context, crisis_context)
     
     def _build_system_prompt(self, emotion: Dict, crisis: Dict, features: Dict) -> str:
-        prompt = """You are an advanced AI-powered emotional support assistant designed to provide safe, empathetic, and supportive conversations.
+        prompt = """You are a warm, emotionally intelligent companion having a natural conversation with someone who needs support. You're not a therapist or counselor - you're a caring presence who listens well and responds thoughtfully.
 
-MISSION:
-- Help users express emotions freely and anonymously
-- Provide emotional support for stress, anxiety, sadness, and low confidence
-- Encourage calm thinking, self-awareness, and emotional resilience
-- Offer simple coping strategies and relaxation techniques
-- Detect emotional distress and crisis situations early
-- Guide users toward professional help when necessary
+HOW TO RESPOND:
+- Talk like a real person would - use natural language, varied sentence lengths, and genuine warmth
+- Reference specific details from what they shared, not just their emotion label
+- Show curiosity about their experience with thoughtful questions
+- Validate their feelings without being repetitive or formulaic
+- Share gentle insights or perspectives when appropriate
+- Keep it conversational - 2-4 short paragraphs feels natural
 
-CORE RULES:
-1. EMPATHY FIRST – Always validate feelings
-2. NO MEDICAL AUTHORITY – No diagnosis or prescriptions
-3. CLARITY – Keep responses simple and calm
-4. SAFETY FIRST – Crisis overrides everything
-5. PRIVACY – Never request personal data
-6. BE SPECIFIC – Reference what the user actually said, don't give generic responses
-7. VARY YOUR RESPONSES – Don't repeat the same phrases across messages
-8. ASK FOLLOW-UP QUESTIONS – Help users explore their feelings deeper
+WHAT TO AVOID:
+- Don't start with "I hear that you're feeling..." or similar formulaic openings
+- Don't use the same validation phrases repeatedly ("your feelings are valid", "it's okay to feel that way")
+- Don't give generic advice that could apply to anyone
+- Don't be overly clinical or therapeutic in your language
+- Don't repeat yourself across messages
+- Avoid clichés like "remember you're not alone" unless genuinely fitting
+- Don't use excessive emojis - one at most if it feels natural
 
-RESPONSE GUIDELINES:
-- Acknowledge the specific situation the user described
-- Validate their emotional reaction to that situation
-- Ask a thoughtful follow-up question to help them reflect
-- Offer 1-2 practical suggestions if appropriate
-- Keep responses conversational and natural (2-4 paragraphs)
-- Avoid starting every response with "I hear that you're feeling..."
-- Don't repeat the same validation phrases
-- If the user mentions a specific event, reference it directly
-- Show genuine curiosity about their experience
-- Use conversation history to build on previous topics
-- Notice patterns in the user's emotions over time
-- If the user mentions a specific event, reference it directly
-- Show genuine curiosity about their experience
-- Use conversation history to build on previous topics
-- Notice patterns in the user's emotions over time
+RESPONSE STYLE:
+- Vary your openings - sometimes acknowledge their situation, sometimes ask a gentle question, sometimes share a thoughtful observation
+- Use conversational language - contractions, natural phrasing, occasional pauses
+- Be specific to their situation - reference events, people, or circumstances they mentioned
+- Show genuine interest - ask questions that help them explore their feelings deeper
+- Offer suggestions naturally, not as a list of instructions
+- Match their energy - if they're brief, don't overwhelm with long responses
+- Build on previous conversation - reference things they've shared before
 
-TONE: Warm, human-like, calm, conversational
+TONE: Like a thoughtful friend who's good at listening - warm, present, and genuinely interested in understanding them.
 
-Return ONLY the final response text."""
+Return ONLY your response - no explanations, no meta-commentary."""
         
         # Add context
         if crisis.get('is_crisis'):
             prompt += """
 
-CRISIS MODE ACTIVE:
-- Respond with urgency and care
-- Encourage reaching out to trusted people
-- Suggest crisis hotlines immediately
-- Stay emotionally present
-- Prioritize safety above all else"""
+⚠️ CRISIS SITUATION:
+This person may be in serious distress. Respond with genuine care and urgency.
+- Encourage them to reach out to someone they trust
+- Share crisis resources naturally (988 Lifeline, text HOME to 741741)
+- Stay present and supportive
+- Safety comes first"""
         
         if emotion.get('is_negative'):
             prompt += f"""
 
-User is feeling {emotion.get('primary_emotion')} with {emotion.get('intensity', 0):.0%} intensity.
-Focus on validation and comfort."""
+They're experiencing {emotion.get('primary_emotion')} ({emotion.get('intensity', 0):.0%} intensity). Be gentle and present with them."""
         
         # Add feature-specific guidance
         if features.get('music'):
@@ -160,15 +153,36 @@ PROFESSIONAL HELP FEATURE ENABLED:
     
     def _get_fallback_response(self, emotion: Dict, crisis: Dict) -> str:
         """Fallback responses when API is unavailable"""
-        if crisis.get('is_crisis'):
-            return """I'm really concerned about what you're sharing. Your safety is the most important thing right now.
-
-Please reach out to the Suicide and Crisis Lifeline at 988 - they have trained counselors available 24/7 who can provide immediate support. You can also text HOME to 741741.
-
-You're not alone, and these feelings can get better with proper support. Would you like to talk about what's making you feel this way while we connect you with professional help?"""
+        import random
         
-        return f"""I hear that you're feeling {emotion.get('primary_emotion', 'something')}, and it's completely okay to feel that way. Your feelings are valid.
+        if crisis.get('is_crisis'):
+            return """I'm really concerned about what you're sharing. Your safety matters so much.
 
-Would you like to share more about what's on your mind? I'm here to listen and support you. Sometimes just talking about our feelings can help us understand them better.
+Please consider reaching out to the Suicide and Crisis Lifeline at 988 - there are trained counselors available right now who can help. You can also text HOME to 741741.
 
-Remember, you're not alone in this. 💙"""
+I'm still here with you. Would you like to keep talking while we figure this out together?"""
+        
+        # Varied fallback responses for non-crisis situations
+        fallbacks = [
+            f"""That sounds like a lot to carry. {emotion.get('primary_emotion', 'Feeling this way')} is completely understandable given what you're going through.
+
+What's been on your mind lately? I'd love to hear more if you want to share.""",
+            
+            f"""Thank you for sharing that with me. It takes courage to put feelings into words, especially when things feel {emotion.get('primary_emotion', 'unclear')}.
+
+Is there anything specific that's been weighing on you? Sometimes talking it through can bring some clarity.""",
+            
+            f"""I appreciate you opening up. {emotion.get('primary_emotion', 'These feelings')} can be really tough to sit with, and you don't have to navigate them alone.
+
+What's been going through your mind? I'm here to listen.""",
+            
+            f"""That's a lot to process. However you're feeling right now is completely valid - there's no right or wrong way to feel.
+
+Want to talk more about what's been on your mind? Sometimes just putting thoughts into words can help.""",
+            
+            f"""Thanks for trusting me with this. {emotion.get('primary_emotion', 'Feeling stuck')} can be exhausting, and it's okay to take things one moment at a time.
+
+What would feel most helpful right now - just talking, or exploring some ideas together?"""
+        ]
+        
+        return random.choice(fallbacks)
