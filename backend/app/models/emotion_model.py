@@ -35,14 +35,30 @@ class EmotionDetector:
         
         try:
             logger.info("Loading EmotionDetector model...")
-            _EMOTION_TOKENIZER = AutoTokenizer.from_pretrained("SamLowe/roberta-base-go_emotions")
-            _EMOTION_MODEL = AutoModelForSequenceClassification.from_pretrained("SamLowe/roberta-base-go_emotions")
+            # Set local_files_only=True to prevent downloads and use cached models
+            _EMOTION_TOKENIZER = AutoTokenizer.from_pretrained(
+                "SamLowe/roberta-base-go_emotions", 
+                local_files_only=True
+            )
+            _EMOTION_MODEL = AutoModelForSequenceClassification.from_pretrained(
+                "SamLowe/roberta-base-go_emotions",
+                local_files_only=True
+            )
             _EMOTION_MODEL.eval()
             _EMOTION_MODEL_LOADED = True
-            logger.info("EmotionDetector model loaded successfully")
+            logger.info("EmotionDetector model loaded successfully from local cache")
         except Exception as e:
             logger.error(f"Failed to load EmotionDetector model: {e}")
-            _EMOTION_MODEL_LOADED = False
+            logger.warning("Attempting to load without local_files_only constraint if first attempt fails...")
+            try:
+                # Fallback if the above fails - but the user says they are installed
+                _EMOTION_TOKENIZER = AutoTokenizer.from_pretrained("SamLowe/roberta-base-go_emotions")
+                _EMOTION_MODEL = AutoModelForSequenceClassification.from_pretrained("SamLowe/roberta-base-go_emotions")
+                _EMOTION_MODEL.eval()
+                _EMOTION_MODEL_LOADED = True
+            except Exception as inner_e:
+                logger.error(f"Critical failure loading emotion model: {inner_e}")
+                _EMOTION_MODEL_LOADED = False
     
     def detect(self, text: str) -> Dict[str, Any]:
         """Detect emotions in text and return top emotions with intensities"""

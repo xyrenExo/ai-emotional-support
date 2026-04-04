@@ -10,7 +10,7 @@ import time
 
 logger = logging.getLogger(__name__)
 
-# Skip empathy refinement by default for faster response (can be enabled via env var)
+# Skip empathy refinement by default for richer, longer responses from Gemini
 SKIP_EMPATHY_REFINEMENT = os.getenv('SKIP_EMPATHY_REFINEMENT', 'true').lower() == 'true'
 
 class ChatService:

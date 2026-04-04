@@ -4,12 +4,14 @@ export interface Message {
   role: "user" | "assistant";
   timestamp: Date;
   emotion?: EmotionResult;
+  crisis?: CrisisResult;
 }
 
 export interface EmotionResult {
   primary_emotion: string;
   intensity: number;
   is_negative: boolean;
+  all_emotions?: Record<string, number>;
 }
 
 export interface ChatResponse {

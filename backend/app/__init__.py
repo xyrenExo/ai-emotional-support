@@ -3,32 +3,32 @@ from flask_cors import CORS
 from flask_limiter import Limiter
 from flask_limiter.util import get_remote_address
 from app.config import Config
-from app.api.routes import api_bp, limiter
-from app.api.middleware import SecurityMiddleware, CorsMiddleware
 import logging
 import sys
+
+# Configure logging at module level BEFORE anything else
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+    handlers=[logging.StreamHandler(sys.stdout)]
+)
+logger = logging.getLogger(__name__)
+
+from app.api.routes import api_bp, limiter
+from app.api.middleware import SecurityMiddleware, CorsMiddleware
 
 def create_app():
     app = Flask(__name__)
     app.config.from_object(Config)
     
-    # Setup logging
-    setup_logging(app)
+    logger.info("Flask app creating...")
     
     # Initialize extensions
     CORS(app, origins=Config.ALLOWED_ORIGINS, supports_credentials=True)
     limiter.init_app(app)
     
-    # Initialize middleware
-    security_middleware = SecurityMiddleware()
-    cors_middleware = CorsMiddleware(Config.ALLOWED_ORIGINS)
-    
     # Register blueprints
     app.register_blueprint(api_bp, url_prefix='/api')
-    
-    # Add middleware
-    app.after_request(security_middleware.add_security_headers)
-    app.after_request(cors_middleware.add_cors_headers)
     
     # Error handlers
     register_error_handlers(app)
@@ -37,10 +37,6 @@ def create_app():
 
 def setup_logging(app):
     """Configure logging for the application"""
-    # Remove default handler
-    if app.logger.hasHandlers():
-        app.logger.handlers.clear()
-    
     # Create console handler
     handler = logging.StreamHandler(sys.stdout)
     formatter = logging.Formatter(
@@ -48,14 +44,19 @@ def setup_logging(app):
     )
     handler.setFormatter(formatter)
     
-    # Add handler to app logger
-    app.logger.addHandler(handler)
-    app.logger.setLevel(logging.DEBUG)
+    # Configure root logger
+    root_logger = logging.getLogger()
+    if root_logger.hasHandlers():
+        root_logger.handlers.clear()
+    root_logger.addHandler(handler)
+    root_logger.setLevel(logging.INFO)
+    
+    # Set app-specific loggers to DEBUG
+    logging.getLogger('app').setLevel(logging.DEBUG)
     
     # Also set up loggers for key modules
     logging.getLogger('flask_cors').setLevel(logging.INFO)
     logging.getLogger('werkzeug').setLevel(logging.INFO)
-
 def register_error_handlers(app):
     """Register error handlers for common HTTP errors"""
     

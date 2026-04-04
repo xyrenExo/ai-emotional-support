@@ -2,6 +2,9 @@ import { useState, useCallback, useRef } from "react";
 import { Message, FeatureToggles, ChatResponse } from "@/types";
 import { chatAPI } from "@/lib/api";
 
+// Generate guaranteed unique IDs
+const uid = () => `${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+
 export const useChat = () => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -14,11 +17,16 @@ export const useChat = () => {
     professional_help: false,
   });
 
+  // Ref to prevent duplicate sends (e.g. double-click, StrictMode)
+  const isSending = useRef(false);
+
   const sendMessage = useCallback(
     async (content: string) => {
-      // Add user message
+      if (isSending.current || !content.trim()) return;
+      isSending.current = true;
+
       const userMessage: Message = {
-        id: Date.now().toString(),
+        id: uid(),
         content,
         role: "user",
         timestamp: new Date(),
@@ -34,59 +42,45 @@ export const useChat = () => {
           features,
         });
 
-        // Save session ID if new
         if (!sessionId && response.session_id) {
           setSessionId(response.session_id);
         }
 
-        // Add assistant message
         const assistantMessage: Message = {
-          id: (Date.now() + 1).toString(),
+          id: uid(),
           content: response.response,
           role: "assistant",
           timestamp: new Date(),
           emotion: response.emotion,
+          crisis: response.crisis,
         };
 
         setMessages((prev) => [...prev, assistantMessage]);
-
         return response;
       } catch (error: any) {
         console.error("Error sending message:", error);
 
-        let errorMessage =
-          "I'm having trouble connecting. Please check your internet connection and try again.";
-
+        let errorMessage = "I'm having trouble connecting right now. Please try again in a moment.";
         if (error.type === "TIMEOUT") {
-          errorMessage =
-            "The server is taking too long to respond. Please try again.";
-        } else if (error.type === "NETWORK_ERROR") {
-          errorMessage =
-            "Cannot reach the server. Please check your internet connection.";
+          errorMessage = "The server is taking too long. Please try again.";
         } else if (error.response?.status === 429) {
-          errorMessage =
-            "Too many requests. Please wait a moment and try again.";
+          errorMessage = "Too many requests. Please wait a moment and try again.";
         } else if (error.response?.status === 500) {
-          errorMessage =
-            "Server error. Please try again later or refresh the page.";
-        } else if (error.response?.status === 503) {
-          errorMessage =
-            "Server is currently unavailable. Please try again later.";
+          errorMessage = "Server error. Please try again later.";
         } else if (error.response?.data?.error) {
           errorMessage = error.response.data.error;
         }
 
-        // Add error message
-        const errorMessage_Obj: Message = {
-          id: (Date.now() + 1).toString(),
+        const errorMsg: Message = {
+          id: uid(),
           content: errorMessage,
           role: "assistant",
           timestamp: new Date(),
         };
-
-        setMessages((prev) => [...prev, errorMessage_Obj]);
+        setMessages((prev) => [...prev, errorMsg]);
       } finally {
         setIsLoading(false);
+        isSending.current = false;
       }
     },
     [sessionId, features],
@@ -95,6 +89,7 @@ export const useChat = () => {
   const clearChat = useCallback(() => {
     setMessages([]);
     setSessionId(null);
+    isSending.current = false;
   }, []);
 
   const toggleFeature = useCallback((feature: keyof FeatureToggles) => {
@@ -106,10 +101,12 @@ export const useChat = () => {
 
   return {
     messages,
+    setMessages,
     isLoading,
     features,
     sendMessage,
     clearChat,
     toggleFeature,
+    sessionId,
   };
 };

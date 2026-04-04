@@ -4,22 +4,25 @@ from typing import Tuple, List, Dict
 class CrisisDetector:
     def __init__(self):
         self.crisis_patterns = [
-            r'\b(suicide|kill myself|end my life|want to die)\b',
-            r'\b(self[-]?harm|hurt myself|cut myself)\b',
-            r'\b(hopeless|worthless|no reason to live)\b',
-            r'\b(crisis hotline|emergency|help me)\b',
-            r'\b(going to end it|can\'t go on)\b'
+            r'\b(suicide|kill myself|end my life|want to die|take my life)\b',
+            r'\b(self[-]?harm|hurt myself|cut myself|burning myself)\b',
+            r'\b(hopeless|worthless|no reason to live|no way out)\b',
+            r'\b(crisis hotline|emergency|help me|need help right now)\b',
+            r'\b(going to end it|can\'t go on|it\'s final|goodbye everyone)\b',
+            r'\b(burden to everyone|everyone is better off without me)\b'
         ]
         
         self.high_risk_patterns = [
-            r'\b(today|tonight|right now)\s+(i will|i\'m going to)',
-            r'\b(plan to|have a plan)'
+            r'\b(today|tonight|right now|immediately)\s+(i will|i\'m going to|doing it)\b',
+            r'\b(have a plan|method|note ready|goodbye letter)\b',
+            r'\b(nothing matters anymore|it is time to leave)\b'
         ]
         
         self.support_resources = {
-            "national_suicide_prevention": "988 Suicide and Crisis Lifeline",
+            "988_suicide_lifeline": "988 Suicide and Crisis Lifeline (Call or Text)",
             "crisis_text_line": "Text HOME to 741741",
-            "emergency": "Call 911 for immediate emergency assistance"
+            "emergency_services": "Call 911 for immediate emergency assistance",
+            "international_resources": "https://www.iasp.info/resources/Crisis_Centres"
         }
     
     def detect(self, text: str) -> Dict:
