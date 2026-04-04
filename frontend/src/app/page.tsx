@@ -100,7 +100,7 @@ export default function LandingPage() {
             © 2024 Emotional Support Assistant. Your privacy is our priority.
           </p>
           <p className="text-sm mt-2">
-            If you're in crisis, please call 988 (Suicide and Crisis Lifeline)
+            If you're in crisis, please call 1926 (National Mental Health Helpline - Sri Lanka)
             immediately.
           </p>
         </div>

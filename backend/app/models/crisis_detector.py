@@ -19,9 +19,10 @@ class CrisisDetector:
         ]
         
         self.support_resources = {
-            "988_suicide_lifeline": "988 Suicide and Crisis Lifeline (Call or Text)",
-            "crisis_text_line": "Text HOME to 741741",
-            "emergency_services": "Call 911 for immediate emergency assistance",
+            "ccc_line": "1926 (National Mental Health Helpline - Sri Lanka)",
+            "1333_crisis_line": "1333 (Crisis Support Line - Toll Free)",
+            "sumithrayo": "011 268 2535 / 0707 308 308 (Sri Lanka Sumithrayo)",
+            "emergency_sri_lanka": "Call 119 (Police) or 110 (Ambulance) for immediate assistance",
             "international_resources": "https://www.iasp.info/resources/Crisis_Centres"
         }
     

@@ -104,22 +104,34 @@ def crisis_resources():
     return jsonify({
         "resources": [
             {
+                "name": "National Mental Health Helpline (CCC Line)",
+                "type": "phone",
+                "contact": "1926",
+                "description": "24/7 free and confidential - Sri Lanka"
+            },
+            {
+                "name": "Crisis Support Line",
+                "type": "phone",
+                "contact": "1333",
+                "description": "Toll-free, 24/7 support in Sri Lanka"
+            },
+            {
+                "name": "Sri Lanka Sumithrayo",
+                "type": "phone",
+                "contact": "011 268 2535 / 0707 308 308",
+                "description": "Emotional support for those in despair"
+            },
+            {
+                "name": "Police Emergency",
+                "type": "emergency",
+                "contact": "119",
+                "description": "Sri Lanka Police for immediate help"
+            },
+            {
                 "name": "988 Suicide and Crisis Lifeline",
                 "type": "phone",
                 "contact": "988",
-                "description": "24/7 free and confidential support"
-            },
-            {
-                "name": "Crisis Text Line",
-                "type": "text",
-                "contact": "741741",
-                "description": "Text HOME to 741741"
-            },
-            {
-                "name": "Emergency Services",
-                "type": "emergency",
-                "contact": "911",
-                "description": "For immediate life-threatening situations"
+                "description": "US and Canada (24/7)"
             }
         ]
     })

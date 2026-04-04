@@ -136,6 +136,19 @@ PROFESSIONAL_RESOURCES = {
             "Therapy Today: https://www.therapytoday.sg"
         ]
     },
+    "LK": {
+        "country": "Sri Lanka",
+        "crisis_hotline": "1926 (National Mental Health Helpline)",
+        "crisis_number": "1926",
+        "crisis_text": "1333 (Crisis Support Line - Toll Free)",
+        "therapist_directory": "https://srilankasumithrayo.lk",
+        "resources": [
+            "CCC Line: 1926 (24/7 free and confidential)",
+            "1333: Crisis Support Line (Toll free, any mobile/landline)",
+            "Sumithrayo: 011-268-2535 / 0707-308-308",
+            "Emergency: 119 (Police) or 110 (Ambulance)"
+        ]
+    },
     "JP": {
         "country": "Japan",
         "crisis_hotline": "Inochi no Denwa: 0570-783-556",
@@ -150,16 +163,16 @@ PROFESSIONAL_RESOURCES = {
         ]
     },
     "DEFAULT": {
-        "country": "Other",
-        "crisis_hotline": "Contact local emergency services",
-        "crisis_number": "Emergency: Contact local authorities (911, 999, or 112)",
-        "crisis_text": "Text or call your local emergency number",
-        "therapist_directory": "https://www.psychologytoday.com",
+        "country": "Sri Lanka (Default)",
+        "crisis_hotline": "1926 (National Mental Health Helpline)",
+        "crisis_number": "1926",
+        "crisis_text": "1333 (Crisis Support Line - Toll Free)",
+        "therapist_directory": "https://srilankasumithrayo.lk",
         "resources": [
-            "International Association for Suicide Prevention: https://www.iasp.info/resources/Crisis_Centres",
-            "Befrienders worldwide: https://www.befrienders.org",
-            "Psychology Today Therapist Directory: https://www.psychologytoday.com",
-            "Contact your local mental health authority or hospital"
+            "CCC Line: 1926 (24/7 free and confidential)",
+            "1333: Crisis Support Line (Toll free)",
+            "Sumithrayo: 011-268-2535 / 0707-308-308",
+            "International: https://www.iasp.info/resources/Crisis_Centres"
         ]
     }
 }

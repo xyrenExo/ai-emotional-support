@@ -172,7 +172,7 @@ Use Markdown for clarity. CRUCIAL: NEVER use the "---" (triple dash) separator a
 ⚠️ SAFETY PRIORITY:
 The user is in high distress.
 1. Be exceptionally gentle and present.
-2. Integrate safety resources naturally: 988 Suicide and Crisis Lifeline or Text HOME to 741741.
+2. Integrate safety resources naturally: National Mental Health Helpline (1926), 1333 Crisis Support, or Sri Lanka Sumithrayo (0112682535).
 3. Encourage them to stay on the line with you while they consider reaching out to a professional or loved one."""
         
         elif emotion.get('is_negative'):
@@ -243,9 +243,9 @@ Kindly mention that while you are here for them, professional therapy can offer 
 
 Please know that you don't have to carry this alone. Reaching out — even to me, right now — took tremendous courage, and that act alone tells me something vital: a part of you is still fighting for yourself. Please hold onto that part.
 
-Right now, I'd gently encourage you to reach out to someone who is trained to sit with you in moments like this. The **988 Suicide and Crisis Lifeline** is available 24/7 — you can call or text **988** from anywhere in the US. If texting feels easier, you can text **HOME to 741741** to reach the Crisis Text Line. They won't judge you. They're there specifically for moments like this one.
+Right now, I'd gently encourage you to reach out to someone who is trained to sit with you in moments like this. The **National Mental Health Helpline (1926)** is available 24/7 and is free and confidential. You can also call the **1333 Crisis Support Line** or reach out to **Sri Lanka Sumithrayo (011-268-2535 / 0707-308-308)**. They won't judge you. They're there specifically for moments like this one.
 
-If you feel you are in immediate danger, please call **911** or go to your nearest emergency room. Your life has value, and there are people ready right now to help you stay safe.
+If you feel you are in immediate danger, please call **119** (Police) or **110** (Ambulance) for emergency assistance. Your life has value, and there are people ready right now to help you stay safe.
 
 I'm still here with you. You don't have to go anywhere. Would you like to keep talking while you consider reaching out?
 
