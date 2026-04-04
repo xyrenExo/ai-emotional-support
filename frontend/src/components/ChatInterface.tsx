@@ -18,6 +18,10 @@ import {
   Brain,
   Lightbulb,
   Phone,
+  Trash2,
+  Pencil,
+  X,
+  Check,
 } from "lucide-react";
 import { useChat } from "@/hooks/useChat";
 import MessageBubble from "./MessageBubble";
@@ -70,6 +74,13 @@ const ChatInterface: React.FC = () => {
       date: new Date(Date.now() - 86400000),
     },
   ]);
+  
+  // Rename/Edit state
+  const [renamingFolder, setRenamingFolder] = useState<string | null>(null);
+  const [renamingSession, setRenamingSession] = useState<number | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+  const [openMenu, setOpenMenu] = useState<string | number | null>(null);
+  
   const {
     messages,
     isLoading,
@@ -131,6 +142,56 @@ const ChatInterface: React.FC = () => {
   const handleSelectSession = (session: { id: number; name: string }) => {
     clearChat();
     console.log("Selected session:", session);
+  };
+
+  // Delete folder
+  const handleDeleteFolder = (folder: string) => {
+    setFolders(folders.filter((f) => f !== folder));
+    setOpenMenu(null);
+  };
+
+  // Delete session
+  const handleDeleteSession = (sessionId: number) => {
+    setSessions(sessions.filter((s) => s.id !== sessionId));
+    setOpenMenu(null);
+  };
+
+  // Start renaming folder
+  const handleStartRenameFolder = (folder: string) => {
+    setRenamingFolder(folder);
+    setRenameValue(folder);
+    setOpenMenu(null);
+  };
+
+  // Start renaming session
+  const handleStartRenameSession = (session: { id: number; name: string }) => {
+    setRenamingSession(session.id);
+    setRenameValue(session.name);
+    setOpenMenu(null);
+  };
+
+  // Confirm rename folder
+  const handleConfirmRenameFolder = () => {
+    if (renameValue.trim() && renamingFolder) {
+      setFolders(
+        folders.map((f) => (f === renamingFolder ? renameValue.trim() : f))
+      );
+    }
+    setRenamingFolder(null);
+    setRenameValue("");
+  };
+
+  // Confirm rename session
+  const handleConfirmRenameSession = () => {
+    if (renameValue.trim() && renamingSession) {
+      setSessions(
+        sessions.map((s) =>
+          s.id === renamingSession ? { ...s, name: renameValue.trim() } : s
+        )
+      );
+    }
+    setRenamingSession(null);
+    setRenameValue("");
   };
 
   const filteredSessions = sessions.filter((session) =>
@@ -207,16 +268,77 @@ const ChatInterface: React.FC = () => {
               </div>
             )}
             <div className="space-y-1">
-              {filteredFolders.map((folder) => (
-                <div
-                  key={folder}
-                  onClick={() => handleSelectFolder(folder)}
-                  className="flex items-center gap-2 text-sm text-gray-400 p-2 hover:bg-[#252525] rounded-lg cursor-pointer transition-colors"
-                >
-                  <FolderOpen className="w-4 h-4" />
-                  <span>{folder}</span>
-                </div>
-              ))}
+              {filteredFolders.map((folder) =>
+                renamingFolder === folder ? (
+                  <div key={folder} className="flex gap-2 mb-1">
+                    <input
+                      autoFocus
+                      type="text"
+                      value={renameValue}
+                      onChange={(e) => setRenameValue(e.target.value)}
+                      onKeyPress={(e) => {
+                        if (e.key === "Enter") handleConfirmRenameFolder();
+                        if (e.key === "Escape") setRenamingFolder(null);
+                      }}
+                      onClick={(e) => e.stopPropagation()}
+                      className="flex-1 text-xs bg-[#252525] text-gray-200 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-accent-500"
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleConfirmRenameFolder();
+                      }}
+                      className="p-1 bg-accent-500 hover:bg-accent-600 text-white rounded text-xs transition-colors"
+                    >
+                      <Check className="w-3 h-3" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setRenamingFolder(null);
+                      }}
+                      className="p-1 bg-[#3A3A3A] hover:bg-[#4A4A4A] text-gray-400 rounded text-xs transition-colors"
+                    >
+                      <X className="w-3 h-3" />
+                    </button>
+                  </div>
+                ) : (
+                  <div
+                    key={folder}
+                    className="flex items-center gap-2 text-sm text-gray-400 p-2 hover:bg-[#252525] rounded-lg cursor-pointer transition-colors group relative"
+                  >
+                    <FolderOpen className="w-4 h-4 flex-shrink-0" />
+                    <span
+                      onClick={() => handleSelectFolder(folder)}
+                      className="truncate flex-1"
+                    >
+                      {folder}
+                    </span>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleStartRenameFolder(folder);
+                        }}
+                        className="p-1 hover:bg-[#3A3A3A] rounded text-gray-400 hover:text-gray-200 transition-colors"
+                        title="Rename"
+                      >
+                        <Pencil className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteFolder(folder);
+                        }}
+                        className="p-1 hover:bg-[#3A3A3A] rounded text-gray-400 hover:text-red-400 transition-colors"
+                        title="Delete"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </button>
+                    </div>
+                  </div>
+                )
+              )}
             </div>
           </div>
 
@@ -232,17 +354,77 @@ const ChatInterface: React.FC = () => {
               {filteredSessions.length === 0 ? (
                 <div className="text-xs text-gray-500 p-2">No sessions yet</div>
               ) : (
-                filteredSessions.map((session) => (
-                  <div
-                    key={session.id}
-                    onClick={() => handleSelectSession(session)}
-                    className="flex items-center gap-2 text-sm text-gray-400 p-2 hover:bg-[#2A2A2B] rounded-lg cursor-pointer transition-colors group"
-                  >
-                    <MessageSquare className="w-4 h-4 text-gray-500" />
-                    <span className="truncate">{session.name}</span>
-                    <MoreHorizontal className="w-4 h-4 text-gray-500 ml-auto opacity-0 group-hover:opacity-100 transition-opacity" />
-                  </div>
-                ))
+                filteredSessions.map((session) =>
+                  renamingSession === session.id ? (
+                    <div key={session.id} className="flex gap-2 mb-1">
+                      <input
+                        autoFocus
+                        type="text"
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyPress={(e) => {
+                          if (e.key === "Enter") handleConfirmRenameSession();
+                          if (e.key === "Escape") setRenamingSession(null);
+                        }}
+                        onClick={(e) => e.stopPropagation()}
+                        className="flex-1 text-xs bg-[#252525] text-gray-200 rounded px-2 py-1 outline-none focus:ring-1 focus:ring-accent-500"
+                      />
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleConfirmRenameSession();
+                        }}
+                        className="p-1 bg-accent-500 hover:bg-accent-600 text-white rounded text-xs transition-colors"
+                      >
+                        <Check className="w-3 h-3" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setRenamingSession(null);
+                        }}
+                        className="p-1 bg-[#3A3A3A] hover:bg-[#4A4A4A] text-gray-400 rounded text-xs transition-colors"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      key={session.id}
+                      className="flex items-center gap-2 text-sm text-gray-400 p-2 hover:bg-[#2A2A2B] rounded-lg cursor-pointer transition-colors group"
+                    >
+                      <MessageSquare className="w-4 h-4 text-gray-500 flex-shrink-0" />
+                      <span
+                        onClick={() => handleSelectSession(session)}
+                        className="truncate flex-1"
+                      >
+                        {session.name}
+                      </span>
+                      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleStartRenameSession(session);
+                          }}
+                          className="p-1 hover:bg-[#3A3A3A] rounded text-gray-400 hover:text-gray-200 transition-colors"
+                          title="Rename"
+                        >
+                          <Pencil className="w-3 h-3" />
+                        </button>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteSession(session.id);
+                          }}
+                          className="p-1 hover:bg-[#3A3A3A] rounded text-gray-400 hover:text-red-400 transition-colors"
+                          title="Delete"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                        </button>
+                      </div>
+                    </div>
+                  )
+                )
               )}
             </div>
           </div>
@@ -261,10 +443,10 @@ const ChatInterface: React.FC = () => {
       </div>
 
       {/* Main Chat Area */}
-      <div className="flex-1 flex flex-col relative h-full bg-[#0E0E0E]">
+      <div className="flex-1 flex flex-col relative h-full bg-[#0E0E0E] min-w-0">
         {/* Top Nav */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center z-10 bg-gradient-to-b from-[#0E0E0E] to-transparent pointer-events-none">
-          <div className="flex items-center gap-4 pointer-events-auto">
+        <div className="flex-shrink-0 p-4 flex justify-between items-center z-10 bg-gradient-to-b from-[#0E0E0E] to-transparent">
+          <div className="flex items-center gap-4">
             <button
               onClick={toggleSidebar}
               className="p-2 hover:bg-surface-700 rounded-lg text-gray-400 transition-colors"
@@ -280,13 +462,14 @@ const ChatInterface: React.FC = () => {
               </span>
             </div>
           </div>
-          <div className="flex items-center gap-3 pointer-events-auto">
+          <div className="flex items-center gap-3">
             <Bookmark className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-200" />
             <Share className="w-5 h-5 text-gray-400 cursor-pointer hover:text-gray-200" />
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto w-full flex justify-center pt-20 pb-40 px-4 custom-scrollbar">
+        {/* Messages Container - scrollable area */}
+        <div className="flex-1 overflow-y-auto w-full flex justify-center px-4 py-4 custom-scrollbar scroll-smooth" style={{ minHeight: 0 }}>
           {messages.length === 0 ? (
             <div className="flex flex-col items-center justify-center w-full max-w-3xl mt-10">
               <div className="w-12 h-12 bg-[#1A1A1A] rounded-full flex items-center justify-center mb-6">
@@ -363,13 +546,13 @@ const ChatInterface: React.FC = () => {
         </div>
 
         {/* Input Area */}
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-[#0E0E0E] via-[#0E0E0E]/90 to-transparent">
+        <div className="flex-shrink-0 p-4 bg-gradient-to-t from-[#0E0E0E] via-[#0E0E0E]/90 to-transparent">
           <div className="max-w-3xl mx-auto w-full">
             <form
               onSubmit={handleSubmit}
               className="relative flex items-center bg-[#1A1A1A] border border-[#2A2A2A] rounded-2xl p-2 pl-4 focus-within:ring-1 focus-within:ring-[#3A3A3A] focus-within:border-[#3A3A3A] transition-all"
             >
-              <Mic className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition-colors" />
+              <Mic className="w-5 h-5 text-gray-400 hover:text-white cursor-pointer transition-colors flex-shrink-0" />
               <textarea
                 ref={inputRef}
                 value={input}
@@ -377,13 +560,13 @@ const ChatInterface: React.FC = () => {
                 onKeyPress={handleKeyPress}
                 placeholder="Type your message here..."
                 rows={1}
-                className="flex-1 bg-transparent border-none text-white focus:outline-none focus:ring-0 resize-none px-3 py-2 text-sm placeholder-gray-500 max-h-[150px]"
+                className="flex-1 bg-transparent border-none text-white focus:outline-none focus:ring-0 resize-none px-3 py-2 text-sm placeholder-gray-500 max-h-[150px] overflow-y-auto"
                 style={{ minHeight: "40px" }}
               />
               <button
                 type="submit"
                 disabled={!input.trim() || isLoading}
-                className={`p-2.5 rounded-xl flex items-center justify-center transition-all ${
+                className={`p-2.5 rounded-xl flex items-center justify-center transition-all flex-shrink-0 ${
                   input.trim() && !isLoading
                     ? "bg-accent-500 text-white hover:bg-accent-600 shadow-lg shadow-accent-500/20 cursor-pointer"
                     : "bg-[#2A2A2A] text-gray-500 cursor-not-allowed"

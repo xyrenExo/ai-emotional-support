@@ -3,8 +3,16 @@
 @tailwind utilities;
 
 @layer base {
-    body {
-        @apply bg-surface-900 text-gray-100 antialiased overflow-hidden;
+    html, body {
+        @apply bg-surface-900 text-gray-100 antialiased;
+        height: 100%;
+        overflow: hidden;
+    }
+    
+    /* Ensure #__next fills the viewport */
+    #__next {
+        height: 100%;
+        overflow: hidden;
     }
 }
 

@@ -18,8 +18,17 @@ class GeminiClient:
                          conversation_history: Optional[List[Dict]] = None) -> str:
         """Generate empathetic response using Gemini (synchronous)"""
         
+        # Normalize features dict (ensure all keys are present with boolean values)
+        normalized_features = {
+            'music': features.get('music', False),
+            'breathing': features.get('breathing', False),
+            'mental': features.get('mental', False),
+            'insight': features.get('insight', False),
+            'professional_help': features.get('professional_help', False),
+        }
+        
         # Build the system prompt
-        system_prompt = self._build_system_prompt(emotion_context, crisis_context, features)
+        system_prompt = self._build_system_prompt(emotion_context, crisis_context, normalized_features)
         
         # Build conversation context
         conversation_context = ""
@@ -77,7 +86,11 @@ RESPONSE STYLE:
 
 TONE: Like a thoughtful friend who's good at listening - warm, present, and genuinely interested in understanding them.
 
-Return ONLY your response - no explanations, no meta-commentary."""
+---
+
+RESPONSE FORMAT INSTRUCTIONS:
+First, write your main empathetic response (2-4 paragraphs).
+Then, if any features are enabled below, add them in the order they appear, separated by a blank line."""
         
         # Add context
         if crisis.get('is_crisis'):
@@ -95,59 +108,95 @@ This person may be in serious distress. Respond with genuine care and urgency.
 
 They're experiencing {emotion.get('primary_emotion')} ({emotion.get('intensity', 0):.0%} intensity). Be gentle and present with them."""
         
-        # Add feature-specific guidance
+        # Add feature-specific guidance with clear formatting
         if features.get('music'):
             prompt += """
 
-MUSIC SUGGESTIONS FEATURE ENABLED:
-- Provide 3-5 specific song/artist recommendations based on the user's mood
-- Include genre suggestions (lo-fi, ambient, classical, nature sounds, etc.)
-- Explain why each suggestion might help their current emotional state
-- Format as a bulleted list with brief descriptions
-- Example: "🎵 'Weightless' by Marconi Union - Scientifically proven to reduce anxiety"
-"""
+---
+🎵 MUSIC SUGGESTIONS (Include this section)
+Based on their mood ({emotion}), suggest 3-5 specific songs or artists:
+Format each as: [Song/Artist] - Genre (Brief explanation of why it helps)
+
+Examples:
+• Weightless - Marconi Union (Ambient) - Scientifically designed to reduce anxiety
+• Nuvole Bianche - Ludovico Einaudi (Classical/Piano) - Calming instrumental piece
+• Lo-fi hip hop beats - Various Artists (Lo-fi) - Great for focus and gentle relaxation
+• Desert Skies - Ólafur Arnalds (Minimalist) - Peaceful and meditative
+
+Include the genre in parentheses and provide brief reasoning for each pick.""".format(emotion=emotion.get('primary_emotion', 'their current state'))
+        
         if features.get('breathing'):
             prompt += """
 
-BREATHING EXERCISES FEATURE ENABLED:
-- Provide a specific breathing technique with step-by-step instructions
-- Include timing (e.g., 4-7-8 technique, box breathing, alternate nostril)
-- Explain how to do it clearly with counts
-- Mention how long to practice and when to use it
-- Format as numbered steps
-- Example: "Try the 4-7-8 technique: 1) Inhale for 4 counts, 2) Hold for 7 counts, 3) Exhale for 8 counts"
-"""
+---
+🌬️ BREATHING EXERCISES (Include this section)
+Provide ONE specific breathing technique with step-by-step instructions:
+
+Format as numbered steps with timing:
+1. [Description of starting position]
+2. [Inhale instruction with count] (e.g., "Inhale slowly through your nose for 4 counts")
+3. [Hold instruction with count] (e.g., "Hold for 7 counts")
+4. [Exhale instruction with count] (e.g., "Exhale slowly through your mouth for 8 counts")
+5. [Repetition instruction] (e.g., "Repeat 5-10 times")
+
+Include the name of the technique (e.g., "4-7-8 Breathing") and a brief explanation of its benefits."""
+        
         if features.get('mental'):
             prompt += """
 
-MENTAL EXERCISES FEATURE ENABLED:
-- Provide a specific cognitive reframing or mental wellness exercise
-- Include step-by-step instructions
-- Explain the psychological benefit
-- Make it actionable and practical
-- Format as numbered steps
-- Example: "Try the 5-4-3-2-1 grounding technique: Name 5 things you see, 4 you can touch..."
-"""
+---
+🧠 MENTAL EXERCISE (Include this section)
+Provide ONE specific, actionable mental/cognitive exercise:
+
+Format as numbered steps:
+1. [Exercise name and purpose]
+2. [Clear instruction step 1]
+3. [Clear instruction step 2]
+4. [Clear instruction step 3]
+5. [How to use this regularly]
+
+Examples:
+- 5-4-3-2-1 Grounding: Name 5 things you see, 4 you can feel, 3 you hear, 2 you smell, 1 you taste
+- Thought Reframing: Identify negative thought → Challenge it → Replace with realistic alternative
+- Worry Time: Set 10 minutes to write down worries → Review what's in your control → Plan action
+
+Make it easy to follow and explain the psychological benefit."""
+        
         if features.get('insight'):
             prompt += """
 
-MOOD INSIGHTS FEATURE ENABLED:
-- Analyze the emotional patterns in what the user shared
-- Identify underlying themes or triggers
-- Provide reflective questions to help them understand their emotions better
-- Point out any cognitive distortions gently (e.g., catastrophizing, black-and-white thinking)
-- Help them see connections between events and feelings
-- Format insights as bullet points with explanations
-"""
+---
+💡 MOOD INSIGHTS (Include this section)
+Analysis of emotional patterns in what they shared:
+
+Identify:
+1. PRIMARY TRIGGER or THEME - What seems to be at the root?
+2. EMOTIONAL PATTERN - Any patterns you notice?
+3. COGNITIVE DISTORTION (if any) - Gently point out (catastrophizing, all-or-nothing thinking, etc.)
+4. STRENGTH - Something positive or resilient they showed
+5. REFLECTION QUESTION - A thoughtful question to help them explore deeper
+
+Format as a numbered list with brief explanations."""
+        
         if features.get('professional_help'):
             prompt += """
 
-PROFESSIONAL HELP FEATURE ENABLED:
-- Acknowledge when professional help might be beneficial
-- Suggest connecting with a therapist or counselor if appropriate
-- Normalize seeking professional mental health support
-- Provide gentle encouragement without being pushy
+---
+👨‍⚕️ PROFESSIONAL SUPPORT (Include this section if appropriate)
+ONLY include this if it's genuinely relevant to what they shared.
+- Acknowledge that professional support could help
+- Normalize seeking therapy or counseling
+- Avoid being pushy - frame it as an option
+- Suggest types of professionals if relevant (therapist, counselor, psychiatrist)
+
+Example: "Speaking with a therapist could really help you work through this. Many people find it helpful to have a trained professional to talk to about anxiety like what you're experiencing."
 """
+        
+        prompt += """
+
+---
+
+Return ONLY your response - no explanations, no meta-commentary."""
         
         return prompt
     
