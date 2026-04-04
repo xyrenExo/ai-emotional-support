@@ -130,185 +130,98 @@ An advanced AI-powered emotional support system providing 24/7 anonymous, compas
 
 ---
 
-## 🚀 Quick Start
+## 🚀 Quick Start (Local Development)
 
 ### Prerequisites
 
-- Docker & Docker Compose
+- Node.js (v18+)
+- Python 3.10+
 - Git
-- Linode account (for deployment) or local Docker installation
 
-### Local Development
+### 1. Backend Setup
 
-1. **Clone repository**
+The backend handles the AI routing and PyTorch ML models.
 
-   ```bash
-   git clone https://github.com/xyrenExo/ai-emotional-support.git
-   cd ai-emotional-support
-   ```
+```bash
+# Navigate to project root
+cd ai-emotional-support
 
-2. **Create `.env` file**
+# Create and activate virtual environment
+python -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
 
-   ```bash
-   cp .env.example .env
-   # Edit .env with your Gemini API key
-   ```
+# Install dependencies
+pip install -r backend/requirements.txt
 
-3. **Start containers**
+# Create .env and add your Gemini key
+cp .env.example .env
 
-   ```bash
-   docker-compose up -d
-   ```
+# Run the backend server
+python backend/wsgi.py
+```
 
-4. **Access application**
-   - Frontend: http://localhost:3000
-   - API Health: http://localhost:5000/api/health
+### 2. Frontend Setup
+
+The frontend is a Next.js 14 application.
+
+```bash
+# Open a new terminal and navigate to frontend
+cd ai-emotional-support/frontend
+
+# Install dependencies
+npm install
+
+# Run the development server
+npm run dev -- -p 3001
+```
+
+Access the application at: `http://localhost:3001`
 
 ### Environment Variables
 
 ```env
-# Required
-GEMINI_API_KEY=your_api_key_here
+# Required for core AI functionality
+GEMINI_API_KEY=your_google_gemini_api_key
 
-# Optional (defaults provided)
-SECRET_KEY=your-secret-key
-DATABASE_URL=postgresql://user:password@postgres:5432/emotion_db
-ALLOWED_ORIGINS=http://localhost:3000,https://your-domain.com
-FLASK_ENV=production
-NODE_ENV=production
+# Optional
+FLASK_ENV=development
 ```
-
----
-
-## 📡 API Endpoints
-
-### Chat Endpoint
-
-**POST** `/api/chat`
-
-Request:
-
-```json
-{
-  "message": "I'm feeling anxious about my presentation",
-  "session_id": "uuid-optional",
-  "features": {
-    "music": true,
-    "breathing": true,
-    "mental": false,
-    "insight": true,
-    "professional_help": false
-  }
-}
-```
-
-Response:
-
-```json
-{
-  "response": "I understand your anxiety about...",
-  "emotion": {
-    "primary_emotion": "nervousness",
-    "intensity": 0.85,
-    "is_negative": true,
-    "all_emotions": {...}
-  },
-  "crisis": {
-    "is_crisis": false,
-    "high_risk": false,
-    "severity": "none"
-  },
-  "session_id": "uuid"
-}
-```
-
-### Emotion Analysis
-
-**POST** `/api/analyze`
-
-Request:
-
-```json
-{
-  "message": "I feel sad today"
-}
-```
-
-### Crisis Resources
-
-**GET** `/api/crisis-resources`
-
-Returns hotlines and mental health resources.
-
-### Health Check
-
-**GET** `/api/health`
-
----
-
-## 🔧 Configuration
-
-### Rate Limiting
-
-- Default: 100 requests/day per IP
-- Chat endpoint: 30 requests/minute
-- Configurable in `backend/app/config.py`
-
-### Database
-
-- **PostgreSQL**: For persistent data (optional)
-- **SQLite**: Default (development)
-
-### Model Caching
-
-- Models downloaded at build time
-- Cached in `./backend/models` volume
-- Supported by Docker layer caching
 
 ---
 
 ## 🌐 Deployment to Linode
 
-1. **SSH into Linode server**
+This project includes automated Bash scripts to completely provision and deploy a production-ready environment (Nginx, SSL, PM2, systemd) to a fresh Linode instance.
 
-   ```bash
-   ssh root@your-linode-ip
-   ```
+### 1. Provision the Server (Run Once)
 
-2. **Clone repository**
+Execute `setup_linode.sh` on your fresh Linode server to install Python, Node.js, Nginx, and all system dependencies.
 
-   ```bash
-   git clone https://github.com/xyrenExo/ai-emotional-support.git
-   cd ai-emotional-support
-   ```
+```bash
+# SSH into your Linode
+ssh root@your-linode-ip
 
-3. **Create `.env` with production values**
+# Run the setup script
+git clone https://github.com/xyrenExo/ai-emotional-support.git
+cd ai-emotional-support
 
-   ```bash
-   nano .env
-   ```
+chmod +x setup_linode.sh
+./setup_linode.sh
+```
 
-4. **Build & start**
+### 2. Deploy the Application
 
-   ```bash
-   docker-compose down
-   docker-compose build --no-cache
-   docker-compose up -d
-   ```
+Whenever you push new code or want to restart the production services, use the `deploy.sh` script. This handles building the Next.js app and restarting the Python backend cleanly.
 
-5. **Verify deployment**
-   ```bash
-   curl https://your-domain.com/api/health
-   docker-compose ps
-   docker-compose logs -f backend
-   ```
+```bash
+chmod +x deploy.sh
+./deploy.sh
+```
 
-### SSL/TLS Setup
-
-- Place certificates in `./ssl/` directory:
-  - `./ssl/cert.pem`
-  - `./ssl/key.pem`
-- Nginx automatically redirects HTTP → HTTPS
+### SSL/TLS and Nginx
+- The deployment scripts automatically configure Nginx as a reverse proxy.
+- Frontend binds to `localhost:3000` internally, while the backend binds to `localhost:5000`.
+- Certbot handles automatic SSL generation if a custom domain is configured.
 
 ---
 
